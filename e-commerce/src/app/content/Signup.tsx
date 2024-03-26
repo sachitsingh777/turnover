@@ -1,24 +1,40 @@
 "use client"
-import React, { useState, ChangeEvent, FormEvent } from 'react';
+import React, { useState } from 'react';
+import { useRouter } from 'next/router';
+import { api } from '~/trpc/react';
+import { useMutation } from 'react-query';
 import TextInput from '../_components/TextInput';
-
-interface FormData {
-  name: string;
-  email: string;
-  password: string;
-}
+import { z } from 'zod';
+const SignUpInput = z.object({
+  name: z.string(),
+  email: z.string().email(),
+  password: z.string().min(6),
+});
 
 const Signup: React.FC = () => {
-  const [data, setData] = useState<FormData>({ name: '', email: '', password: '' });
+  const router = useRouter();
+  const [data, setData] = useState({ name: '', email: '', password: '' });
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setData({ ...data, [name]: value });
+    setData(prevData => ({ ...prevData, [name]: value }));
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const [registerUser] = useMutation(api.user.register, {
+    input: SignUpInput.parse(data),
+    async resolve({ data }) {
+      router.push('/login'); // Redirect to login page after successful registration
+    },
+    onError(error) {
+      // Handle registration error
+      console.error('Registration error:', error);
+    },
+  });
+  
+  // Replace your handleSubmit function with this
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Your form submission logic here
+    registerUser.mutate();
   };
 
   return (

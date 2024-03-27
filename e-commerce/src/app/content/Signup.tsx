@@ -5,6 +5,7 @@ import { api } from '~/trpc/react';
 import { useMutation } from 'react-query';
 import TextInput from '../_components/TextInput';
 import { z } from 'zod';
+
 const SignUpInput = z.object({
   name: z.string(),
   email: z.string().email(),
@@ -20,21 +21,19 @@ const Signup: React.FC = () => {
     setData(prevData => ({ ...prevData, [name]: value }));
   };
 
-  const [registerUser] = useMutation(api.user.register, {
-    input: SignUpInput.parse(data),
-    async resolve({ data }) {
+  const registerUserMutation = useMutation(api.user.register, {
+    onSuccess: () => {
       router.push('/login'); // Redirect to login page after successful registration
     },
-    onError(error) {
+    onError: (error) => {
       // Handle registration error
       console.error('Registration error:', error);
     },
   });
-  
-  // Replace your handleSubmit function with this
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    registerUser.mutate();
+    registerUserMutation.mutate(data); // Pass data to the mutate function
   };
 
   return (

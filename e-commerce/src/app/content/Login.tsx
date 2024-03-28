@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { useMutation } from 'react-query';
 import TextInput from '../_components/TextInput';
 import { z } from 'zod';
+import { api } from '~/trpc/react';
 
 // Define input schema for user login
 const LoginInput = z.object({
@@ -16,12 +17,8 @@ const Login: React.FC = () => {
   const [data, setData] = useState({ email: '', password: '' });
 
   // Use useMutation hook to handle the user login mutation
-  const [loginUser] = useMutation('user.login', {
-    input: LoginInput,
-    async resolve({ data }) {
-      router.push('/dashboard'); // Redirect to dashboard page after successful login
-    },
-    onError(error) {
+  const loginUser = useMutation('user.login', {
+    onError: (error) => {
       console.error('Login error:', error.message);
     },
   });
@@ -33,7 +30,12 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    loginUser.mutate(data);
+    try {
+      await loginUser.mutateAsync(data);
+      router.push('/dashboard'); // Redirect to dashboard page after successful login
+    } catch (error) {
+      console.error('Login error:', error);
+    }
   };
 
   return (

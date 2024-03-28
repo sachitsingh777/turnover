@@ -7,7 +7,7 @@ import Login from "./content/Login";
 import { AppProps } from 'next/app';
 
 export default async function Home({ Component, pageProps }: AppProps) {
-  const hello = await api.post.hello({ text: "from tRPC" });
+ 
 
   return (
     <>
